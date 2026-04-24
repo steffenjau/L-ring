@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Norsk Spill 🎉</title>
+<style>
+    body {
+        font-family: Arial;
+        text-align: center;
+        background: linear-gradient(to right, #87CEFA, #FFD700);
+    }
+    .card {
+        background: white;
+        padding: 20px;
+        margin: 20px auto;
+        width: 320px;
+        border-radius: 15px;
+        box-shadow: 0 0 10px gray;
+    }
+    button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .word {
+        cursor: pointer;
+        color: blue;
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎮 Lær Norsk!</h1>
+<p>Klikk på et norsk ord for å høre det 🔊</p>
+
+<div class="card">
+    <h2 id="russianWord">...</h2>
+    <div id="options"></div>
+</div>
+
+<h3>Poeng: <span id="score">0</span></h3>
+
+<audio id="correctSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+<script>
+let score = 0;
+
+const words = [
+{ru:"кошка",no:"katt"},{ru:"собака",no:"hund"},{ru:"дом",no:"hus"},
+{ru:"вода",no:"vann"},{ru:"солнце",no:"sol"},{ru:"книга",no:"bok"},
+{ru:"машина",no:"bil"},{ru:"еда",no:"mat"},{ru:"молоко",no:"melk"},
+{ru:"хлеб",no:"brød"},{ru:"яблоко",no:"eple"},{ru:"школа",no:"skole"},
+{ru:"учитель",no:"lærer"},{ru:"стол",no:"bord"},{ru:"стул",no:"stol"},
+{ru:"дверь",no:"dør"},{ru:"окно",no:"vindu"},{ru:"город",no:"by"},
+{ru:"дерево",no:"tre"},{ru:"река",no:"elv"},{ru:"гора",no:"fjell"},
+{ru:"друг",no:"venn"},{ru:"семья",no:"familie"},{ru:"мама",no:"mamma"},
+{ru:"папа",no:"pappa"},{ru:"ребенок",no:"barn"},{ru:"день",no:"dag"},
+{ru:"ночь",no:"natt"},{ru:"утро",no:"morgen"},{ru:"вечер",no:"kveld"},
+{ru:"белый",no:"hvit"},{ru:"черный",no:"svart"},{ru:"красный",no:"rød"},
+{ru:"синий",no:"blå"},{ru:"зеленый",no:"grønn"},{ru:"желтый",no:"gul"},
+{ru:"один",no:"en"},{ru:"два",no:"to"},{ru:"три",no:"tre"},
+{ru:"четыре",no:"fire"},{ru:"пять",no:"fem"},{ru:"шесть",no:"seks"},
+{ru:"семь",no:"sju"},{ru:"восемь",no:"åtte"},{ru:"девять",no:"ni"},
+{ru:"десять",no:"ti"},{ru:"быстрый",no:"rask"},{ru:"медленный",no:"sakte"},
+{ru:"большой",no:"stor"},{ru:"маленький",no:"liten"},
+{ru:"говорить",no:"snakke"},{ru:"есть",no:"spise"},
+{ru:"пить",no:"drikke"},{ru:"идти",no:"gå"},
+{ru:"бежать",no:"løpe"},{ru:"смотреть",no:"se"},
+{ru:"слушать",no:"høre"},{ru:"писать",no:"skrive"},
+{ru:"читать",no:"lese"},{ru:"играть",no:"leke"},
+{ru:"работать",no:"jobbe"},{ru:"жить",no:"bo"},
+{ru:"любить",no:"elske"},{ru:"хотеть",no:"ville"},
+{ru:"мочь",no:"kunne"},{ru:"должен",no:"må"},
+{ru:"сегодня",no:"i dag"},{ru:"завтра",no:"i morgen"},
+{ru:"вчера",no:"i går"},{ru:"здесь",no:"her"},
+{ru:"там",no:"der"},{ru:"всегда",no:"alltid"},
+{ru:"никогда",no:"aldri"},{ru:"иногда",no:"noen ganger"},
+{ru:"очень",no:"veldig"},{ru:"хорошо",no:"bra"},
+{ru:"плохо",no:"dårlig"},{ru:"да",no:"ja"},
+{ru:"нет",no:"nei"},{ru:"почему",no:"hvorfor"},
+{ru:"что",no:"hva"},{ru:"где",no:"hvor"},
+{ru:"кто",no:"hvem"},{ru:"когда",no:"når"},
+{ru:"как",no:"hvordan"},{ru:"какой",no:"hvilken"},
+{ru:"мой",no:"min"},{ru:"твой",no:"din"},
+{ru:"его",no:"hans"},{ru:"ее",no:"hennes"},
+{ru:"наш",no:"vår"},{ru:"их",no:"deres"},
+{ru:"этот",no:"denne"},{ru:"тот",no:"den"},
+{ru:"здесь есть",no:"det er"},{ru:"я",no:"jeg"},
+{ru:"ты",no:"du"},{ru:"он",no:"han"},
+{ru:"она",no:"hun"},{ru:"мы",no:"vi"},
+{ru:"они",no:"de"}
+];
+
+let current;
+
+function speak(word) {
+    let utterance = new SpeechSynthesisUtterance(word);
+    utterance.lang = "nb-NO";
+    speechSynthesis.speak(utterance);
+}
+
+function shuffle(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+}
+
+function loadWord() {
+    current = words[Math.floor(Math.random() * words.length)];
+    document.getElementById("russianWord").innerText = current.ru;
+
+    let options = [current.no];
+    while (options.length < 3) {
+        let random = words[Math.floor(Math.random() * words.length)].no;
+        if (!options.includes(random)) options.push(random);
+    }
+
+    options = shuffle(options);
+
+    let container = document.getElementById("options");
+    container.innerHTML = "";
+
+    options.forEach(opt => {
+        let btn = document.createElement("button");
+        btn.innerHTML = '<span class="word" onclick="speak(\''+opt+'\')">'+opt+'</span>';
+        btn.onclick = () => checkAnswer(opt);
+        container.appendChild(btn);
+    });
+}
+
+function checkAnswer(answer) {
+    if (answer === current.no) {
+        score++;
+        document.getElementById("correctSound").play();
+        flash("lightgreen");
+    } else {
+        flash("lightcoral");
+    }
+
+    document.getElementById("score").innerText = score;
+    setTimeout(loadWord, 800);
+}
+
+function flash(color) {
+    document.body.style.background = color;
+    setTimeout(() => {
+        document.body.style.background = "linear-gradient(to right, #87CEFA, #FFD700)";
+    }, 400);
+}
+
+loadWord();
+</script>
+
+</body>
+</html>
